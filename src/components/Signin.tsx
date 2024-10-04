@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import React, { useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-
+import { cn } from '@/lib/utils';
 const emailDomains = [
   'gmail.com',
   'yahoo.com',
@@ -48,7 +48,7 @@ const Signin = () => {
       ...prevState,
       emailReq: false,
     }));
-    
+
     // Check if the input is a phone number
     const phoneNumberRegex = /^[0-9]{10}$/;
     if (phoneNumberRegex.test(value)) {
@@ -62,9 +62,12 @@ const Signin = () => {
     }
 
     const [, currentDomain] = value.split('@');
-    
+
     // Clear suggestions if domain doesn't match
-    if (!currentDomain || !emailDomains.some((domain) => domain.startsWith(currentDomain))) {
+    if (
+      !currentDomain ||
+      !emailDomains.some((domain) => domain.startsWith(currentDomain))
+    ) {
       setSuggestedDomains([]); // Hide suggestions for mismatched domains
       return;
     }
@@ -215,12 +218,18 @@ const Signin = () => {
                         ref={(listItem) =>
                           (suggestionRefs.current[index] = listItem!)
                         }
-                        onClick={() => handleSuggestionClick(domain)}
-                        className={`relative flex w-full cursor-default select-none items-center rounded-sm p-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${
-                          focusedIndex === index
-                            ? 'bg-primary-foreground font-medium'
-                            : ''
-                        }`}
+                        onPointerDown={(e: React.MouseEvent<HTMLLIElement>) => {
+                          if (e.button === 0) {
+                            handleSuggestionClick(domain);
+                          }
+                        }}
+                        className={cn(
+                          'relative flex w-full cursor-pointer select-none items-center rounded-sm p-2 text-sm outline-none hover:bg-primary-foreground hover:font-medium focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                          {
+                            'bg-primary-foreground font-medium':
+                              focusedIndex === index,
+                          },
+                        )}
                       >
                         {email.current.split('@')[0]}@{domain}
                       </li>
